@@ -1,2 +1,2 @@
-# Cortex-M_AI_System_Semiconductor_SW-
+# STM32_AI_System_Semiconductor_SW
 Cortex-M
