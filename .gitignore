@@ -49,3 +49,48 @@ CMakeUserPresets.json
 *.bin
 *.map
 *.list
+
+
+#=============기타 목록보고 추가========
+# --- Build Outputs ---
+*.elf
+*.hex
+*.bin
+*.map
+*.lst
+*.axf
+*.lnp
+*.dep
+*.htm
+*.build_log.htm
+*.o
+*.d
+*.su
+build/
+Debug/
+Release/
+
+# --- IDE Settings ---
+.metadata/
+.settings/
+.clangd/
+*.uvguix.*
+*.scvd
+DebugConfig/
+
+# --- VS Code / CMake ---
+.vscode/
+CMakeUserPresets.json
+.cache/
+
+#============window macos 관련 ==================
+# Windows thumbnail 캐시
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# macOS 시스템 파일
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
