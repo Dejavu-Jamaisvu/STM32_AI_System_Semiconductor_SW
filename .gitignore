@@ -1,0 +1,44 @@
+
+#==============STM Cube MX & IDE ================
+# Build outputs
+Debug/
+Release/
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+
+# IDE specific (Eclipse/CubeIDE)
+.settings/
+*.launch
+
+# CubeMX temporary
+MXTmpFiles/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+
+#==============vscode 확장 사용시================
+# --- VS Code specific ---
+.vscode/
+# 만약 팀 공용 설정을 공유하고 싶다면 아래처럼 일부만 제외하세요.
+# !.vscode/tasks.json
+# !.vscode/extensions.json
+
+# --- Build system (CMake/Ninja) ---
+build/
+CMakeUserPresets.json
+.cache/
+
+# --- Standard STM32 / C++ ---
+*.o
+*.d
+*.su
+*.elf
+*.hex
+*.bin
+*.map
+*.list
