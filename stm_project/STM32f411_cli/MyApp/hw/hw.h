@@ -4,8 +4,7 @@
 #include "hw_def.h" ////추가됐넹
 #include "led.h"
 #include "uart.h"
-
-
+#include "cli.h"
 
 void hwInit(void);
 

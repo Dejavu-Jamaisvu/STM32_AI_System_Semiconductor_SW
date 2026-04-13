@@ -1,11 +1,14 @@
 //#include "driver/uart.h"
-#include "hw.h"
 
+// #include "hw_def.h"
+#include "hw.h"
+#include "driver/cli.h"
 
 void hwInit(void)
 {
     ledInit();
     uartInit();
-    uartOpen(0, 9600);
+    cliInit();
+    // uartOpen(0, 9600);
 
 }

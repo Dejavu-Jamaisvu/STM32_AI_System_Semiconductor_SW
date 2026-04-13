@@ -9,6 +9,8 @@
 bool uartInit(void);
 bool uartOpen(uint8_t ch, uint32_t baudrate);
 bool uartClose(uint8_t ch);
+// void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
+uint32_t uartAvailable(uint8_t ch);
 uint8_t uartRead(uint8_t ch);
 uint32_t uartWrite(uint8_t ch, uint8_t *p_data, uint32_t len);
 

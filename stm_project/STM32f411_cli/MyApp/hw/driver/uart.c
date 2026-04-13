@@ -1,5 +1,6 @@
 
 #include "uart.h"  
+#include "stm32f4xx_hal_uart.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,11 +8,65 @@ extern UART_HandleTypeDef huart2;
 
 #define TIMEOUT 100
 
+#define UART_RX_BUF_LENGTH 256
+
+static uint8_t rx_buf[UART_RX_BUF_LENGTH];
+static uint32_t rx_buf_head = 0;
+static uint32_t rx_buf_tail = 0;
+static uint8_t rx_data = 0;
+
+
+
 bool uartInit(void){
 
-    return uartOpen(0, 115200);
+    bool ret = uartOpen(0, 9600);
+
+    HAL_UART_Receive_IT(&huart2, &rx_data, 1);
+
+    // return uartOpen(0, 115200);
+    return ret;
+    
 
 }
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+
+    if(huart->Instance == USART2){
+        rx_buf[rx_buf_head] = rx_data;
+        rx_buf_head = (rx_buf_head + 1 ) % UART_RX_BUF_LENGTH;
+    
+        HAL_UART_Receive_IT(&huart2, &rx_data, 1);
+
+    }
+
+}
+uint32_t uartAvailable(uint8_t ch){
+    uint32_t ret = 0; //초기화 //쓰레기값 방지
+
+    if(rx_buf_head != rx_buf_tail){
+        if(rx_buf_head > rx_buf_tail){
+            ret = rx_buf_head - rx_buf_tail;
+        }else{
+            ret = UART_RX_BUF_LENGTH - (rx_buf_tail - rx_buf_head);
+        }
+    }
+    return ret;
+}
+
+uint8_t uartRead(uint8_t ch)
+{
+    uint8_t ret=0;
+
+    if(rx_buf_head != rx_buf_tail){
+        ret = rx_buf[rx_buf_tail];
+        rx_buf_tail = (rx_buf_tail + 1) % UART_RX_BUF_LENGTH;
+    }////
+
+
+    return ret;
+
+}
+
 bool uartOpen(uint8_t ch, uint32_t baudrate){
     if(huart2.Init.BaudRate!=baudrate)
         huart2.Init.BaudRate=baudrate;
@@ -32,14 +87,6 @@ bool uartClose(uint8_t ch){
 }
 
 
-uint8_t uartRead(uint8_t ch)
-{
-    uint8_t ret=0;
-
-
-    return ret;
-
-}
 
 uint32_t uartWrite(uint8_t ch, uint8_t *p_data, uint32_t len)
 {
