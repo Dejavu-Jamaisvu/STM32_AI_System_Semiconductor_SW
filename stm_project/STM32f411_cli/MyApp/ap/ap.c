@@ -17,7 +17,8 @@ void apMain(){
         ledOff();
         HAL_Delay(1000);
 
-        uartWrite(0,(uint8_t *)"HEllOW", 7);
+        //uartWrite(0,(uint8_t *)"HEllOW", 7);
+        uartPrintf(0,(uint8_t *)"HEllOW %d\r\n", 10);
 
     }
 }

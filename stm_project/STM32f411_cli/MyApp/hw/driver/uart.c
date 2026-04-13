@@ -1,6 +1,8 @@
 
 #include "uart.h"  
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 extern UART_HandleTypeDef huart2;
 
 #define TIMEOUT 100
@@ -46,4 +48,18 @@ uint32_t uartWrite(uint8_t ch, uint8_t *p_data, uint32_t len)
 
     return 0;
 
+}
+
+uint32_t uartPrintf(uint8_t ch, const char *fmt, ...){
+
+
+    char buf[128];
+    uint32_t len;
+    va_list args;
+
+    va_start(args, fmt);
+    len = vsnprintf(buf, 128, fmt, args);
+    va_end(args);
+
+    return uartWrite(ch, (uint8_t *) buf, len);
 }
