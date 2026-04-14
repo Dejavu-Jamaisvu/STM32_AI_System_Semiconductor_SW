@@ -1,6 +1,7 @@
 #include "cli.h"
 #include "hw_def.h"
 #include "bsp.h"
+#include "main.h"//
 #include <stdint.h>
 #include <string.h>
 
@@ -26,10 +27,32 @@ void cliLed(uint8_t argc, char** argv){
 
 void cliInfo(uint8_t argc, char** argv)
 {
+
+    if(argc == 1)
+    {
+        cliPrintf("===============================\r\n");
+        cliPrintf(" HW Model    :   STM32F411\r\n");
+        cliPrintf(" FW Version  : V1.0.0\r\n");
+        cliPrintf(" Build Date : %s %s\r\n", __DATE__, __TIME__);
+        
+        uint32_t uid0 = HAL_GetUIDw0();
+        uint32_t uid1 = HAL_GetUIDw1();
+        uint32_t uid2 = HAL_GetUIDw2();
+        uint32_t dev = HAL_GetDEVID();
+
+        // uint32_t hal = HAL_GetHalVersion();
+        // uint32_t rev = HAL_GetREVID();
+        
+        cliPrintf(" Serial Num  : %08x-%08x-%08x\r\n", uid0, uid1, uid2);
+        cliPrintf(" DevicID     : %08x\r\n", dev);
+        cliPrintf("===============================\r\n");
+    }
+
     if(argc == 2 || strcmp(argv[1],"uptime") == 0){
         cliPrintf("System Uptime: %d ms \r\n", millis());
     } else {
-        cliPrintf("Usage: info [uptime]\r\n");
+        cliPrintf("Usage: info\r\n");
+        cliPrintf("       info [uptime]\r\n");
     }
 }
 
