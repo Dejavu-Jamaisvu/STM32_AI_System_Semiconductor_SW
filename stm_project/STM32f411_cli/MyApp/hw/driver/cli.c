@@ -20,12 +20,12 @@ static uint16_t cli_line_idx = 0;
 
 
 static void cliHelp (uint8_t argc, char** argv){
-    cliPrintf("---------CLI Commands---------");
+    cliPrintf("---------CLI Commands---------\r\n");
 
     for(uint8_t i=0; i<cli_cmd_count; i++){
         cliPrintf("%s \r\n", cli_cmd_list[i].cmd_str);
     }
-    cliPrintf("---------------------------------");
+    cliPrintf("-------------------------------\r\n");
 }
 
 void cliInit(){
@@ -71,10 +71,11 @@ void cliRunCommand(){
 
         }
         
-        if(is_found == false){
-            cliPrintf("Command Not Found\r\n");
+    }
+    
+    if(is_found == false){
+        cliPrintf("Command Not Found\r\n");
 
-        }
     }
 
 }
@@ -85,7 +86,7 @@ bool cliAdd(const char* cmd_str, void (*cmd_func)(uint8_t argc, char** argv)){ /
         return false;
 
     //char cmd_str[16]; 사용시
-    //값을 복사하는데 strncpy에서 포인터를 복사하게되어 문제가 됨. 아마 공간할당 문제로 보임
+    // 값을 복사해야하는데 strncpy에서 포인터를 복사하게되어 문제가 됨. 아마 공간할당 문제로 보임
     //strncpy(cli_cmd_list[cli_cmd_count].cmd_str, cmd_str, strlen(cmd_str));
     
     // char *cmd_str; 사용시
@@ -103,11 +104,23 @@ void cliMain(){
     if(uartAvailable(0)>0){
         uint8_t rx_data = uartRead(0);
         if(rx_data == '\r'|| rx_data == '\n'){
+
+            cliPrintf("\r\n");
             cli_line_buf[cli_line_idx]='\0';
             cliParseArgs(cli_line_buf);
             cliRunCommand();
+
+            cliPrintf("CLI> ");
             cli_line_idx = 0;
+
+        }else if(rx_data == '\b' || rx_data == 127){
+            if(cli_line_idx > 0){
+                cli_line_idx--;
+                cliPrintf("\b \b");
+            }
+
         }else {
+            cliPrintf("%c", rx_data);
             cli_line_buf[cli_line_idx++] = rx_data;
             if(cli_line_idx >=CLI_LINE_BUF_MAX)
             cli_line_idx=0;
