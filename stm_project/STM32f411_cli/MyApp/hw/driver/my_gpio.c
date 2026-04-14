@@ -19,24 +19,24 @@ static GPIO_TypeDef* getPortPtr(uint8_t port_idx)
 
     switch (port_idx){
 
-        case 0: HAL_RCC_GPIOA_CLK_ENABLE();
+        case 0: __HAL_RCC_GPIOA_CLK_ENABLE();
             return GPIOA;
         case 1:
-            _HAL_RCC_GPIOB_CLK_ENABLE();
+            __HAL_RCC_GPIOB_CLK_ENABLE();
             return GPIOB;
         case 2:
-            _HAL_RCC_GPIOC_CLK_ENABLE();
+            __HAL_RCC_GPIOC_CLK_ENABLE();
             return GPIOC;
         case 3:
-            _HAL_RCC_GPIOD_CLK_ENABLE();
+            __HAL_RCC_GPIOD_CLK_ENABLE();
             return GPIOD;
         case 4:
-            _HAL_RCC_GPIOE_CLK_ENABLE();
+            __HAL_RCC_GPIOE_CLK_ENABLE();
             return GPIOE;
         // case 5: return GPIOF;
         // case 6: return GPIOG;
         case 7:
-            _HAL_RCC_GPIOH_CLK_ENABLE();
+            __HAL_RCC_GPIOH_CLK_ENABLE();
             return GPIOH;
         default:
             return NULL;
