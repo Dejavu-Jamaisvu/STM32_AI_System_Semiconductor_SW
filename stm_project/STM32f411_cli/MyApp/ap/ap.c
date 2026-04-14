@@ -30,10 +30,10 @@ void cliInfo(uint8_t argc, char** argv)
 
     if(argc == 1)
     {
-        cliPrintf("===============================\r\n");
+        cliPrintf("=========================================\r\n");
         cliPrintf(" HW Model    :   STM32F411\r\n");
         cliPrintf(" FW Version  : V1.0.0\r\n");
-        cliPrintf(" Build Date : %s %s\r\n", __DATE__, __TIME__);
+        cliPrintf(" Build Date  : %s %s\r\n", __DATE__, __TIME__);
         
         uint32_t uid0 = HAL_GetUIDw0();
         uint32_t uid1 = HAL_GetUIDw1();
@@ -45,7 +45,7 @@ void cliInfo(uint8_t argc, char** argv)
         
         cliPrintf(" Serial Num  : %08x-%08x-%08x\r\n", uid0, uid1, uid2);
         cliPrintf(" DevicID     : %08x\r\n", dev);
-        cliPrintf("===============================\r\n");
+        cliPrintf("=========================================\r\n");
     }
 
     if(argc == 2 || strcmp(argv[1],"uptime") == 0){
