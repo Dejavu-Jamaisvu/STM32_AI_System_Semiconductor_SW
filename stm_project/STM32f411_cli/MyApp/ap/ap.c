@@ -4,9 +4,99 @@
 #include "main.h" //
 
 #include <ctype.h> // tolower()를 위해 추가
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h> // atoi()를 위해 추가
 #include <string.h>
+
+static bool isSafeAddress(uint32_t addr)
+{
+    // 1. f411 flash
+    if (0x08000000 <= addr && addr <= 0x0807FFFF)
+        return true;
+
+    // 2. f411 ram
+    if (0x20000000 <= addr && addr <= 0x20001FFF)
+        return true;
+
+    // 3. system memory
+    if (0x1FFF0000 <= addr && addr <= 0x1FFF7A1F)
+        return true;
+
+    // 4. Peripheral register
+    if (0x40000000 <= addr && addr <= 0x5FFFFFFF)
+        return true;
+
+    return false;
+}
+
+// md 0x8000-0000 32
+void cliMd(uint8_t argc, char **argv)
+{
+    if (argc >= 2) {
+        uint32_t addr = strtoul(argv[1], NULL, 16);
+        uint32_t length = 16;
+
+        if (argc >= 3) {
+            length = strtoul(argv[2], NULL, 0);
+        }
+
+        for (uint32_t i = 0; i < length; i += 16) {
+
+            cliPrintf("0x%08x : ", addr + i);
+            for (uint32_t j = 0; j < 16; j++) {
+
+                if (i + j < length) {
+
+                    uint32_t target_addr = (addr + i + j);
+
+                    if (isSafeAddress(target_addr)) {
+
+                        // uint8_t val = *(uint8_t *)(addr + i + j);
+                        uint8_t val = *((volatile uint8_t *)target_addr);
+
+                        cliPrintf("%02X ", val);
+                    }
+                    else {
+
+                        cliPrintf("Not valid address!!\r\n");
+                        break;
+                    }
+                } else {
+                    cliPrintf("     ");
+                }
+            }
+
+            cliPrintf(" | ");
+
+            for (uint32_t j = 0; j < 16; j++) {
+
+                if (i + j < length) {
+                    uint32_t target_addr = (addr + i + j);
+
+                    if (isSafeAddress(target_addr)) {
+                        uint8_t val = *((volatile uint8_t *)target_addr);
+
+                        if (val >= 0x20 && val <= 0x7E) {
+                            cliPrintf("%c", val);
+                        } else {
+
+                            cliPrintf(".");
+                        }
+                    } else {
+
+                        cliPrintf("Not valid address!!\r\n");
+                        break;
+                    }
+                }
+            }
+            cliPrintf("\r\n"); // 내가 추가
+        }
+    } else {
+        cliPrintf(" Usage : md [add(hex)] [length]\r\n");
+        cliPrintf("         md 98000000 32 \r\n");
+    }
+}
 
 // argv[1] : "read" "write"
 // argv[2] : pin "A5", "B12"
@@ -109,6 +199,7 @@ void apInit()
     cliAdd("info", cliInfo);
     cliAdd("sys", cliSys);
     cliAdd("gpio", cliGpio);
+    cliAdd("md", cliMd);
 }
 
 void apMain()
