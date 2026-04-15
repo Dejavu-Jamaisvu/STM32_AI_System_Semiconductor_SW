@@ -243,17 +243,26 @@ void cliSys(uint8_t argc, char **argv)
         cliPrintf("Usage: sys [reset]\r\n");
     }
 }
-void apInit()
+static uint32_t temp_report_period = 0; // 0이면 출력 정지
+void cliTemp(uint8_t argc, char **argv)
 {
-    hwInit();
-    cliAdd("led", cliLed);
-    cliAdd("info", cliInfo);
-    cliAdd("sys", cliSys);
-    cliAdd("gpio", cliGpio);
-    cliAdd("md", cliMd);
-    cliAdd("button", cliButton);
-}
+    if (argc == 1) {
+        float t = tempRead();
+        cliPrintf("Current Temp: %.2f C\r\n", t);
 
+    } else if (argc == 2) {
+        int period = atoi(argv[1]);
+        if (period > 0) {
+            temp_report_period = period;
+            cliPrintf("Temperature Auto-Read Started (%d ms)\r\n", period);
+        } else {
+            cliPrintf("Invalid Period\r\n");
+        }
+    } else {
+        cliPrintf("Usage: temp\r\n");
+        cliPrintf("     : temp [period]\r\n");
+    }
+}
 void ledSystemTask(void *argument)
 {
    
@@ -268,11 +277,36 @@ void ledSystemTask(void *argument)
             
     }
 }
+void tempSystemTask(void *argument)
+{
+    while (1) {
 
+        if (temp_report_period > 0) {
+            float t = tempRead(); // ADC를 통해 온도를 계산하는 함수
+            cliPrintf("Current Temp: %.2f C\r\n", t);
+
+            osDelay(temp_report_period);
+        } else {
+            // 출력이 꺼져있을 때는 낮은 주기로 대기하여 CPU 점유율 방지
+            osDelay(50);
+        }
+    }
+}
+void apInit()
+{
+    hwInit();
+    cliAdd("led", cliLed);
+    cliAdd("info", cliInfo);
+    cliAdd("sys", cliSys);
+    cliAdd("gpio", cliGpio);
+    cliAdd("md", cliMd);
+    cliAdd("button", cliButton);
+    cliAdd("temp", cliTemp);
+}
 void apMain()
 {
-    //osThreadId_t ledSystemTaskHandle;
-    
+    // osThreadId_t ledSystemTaskHandle;
+
     // const osThreadAttr_t ledSystemTask_attributes = {
     //     .name = "ledSystemTask",
     //     .stack_size = 128 * 4,
@@ -280,11 +314,10 @@ void apMain()
 
     // };
     // osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
-    
-    //ledSystemTaskHandle = osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
 
+    // ledSystemTaskHandle = osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
 
-    //uartPrintf(0, "HEllOW world!! \r\n"); //(uint8_t *)
+    // uartPrintf(0, "HEllOW world!! \r\n"); //(uint8_t *)
     uartPrintf(0, "LED Task Started!! \r\n"); //(uint8_t *)
 
     while (1) {

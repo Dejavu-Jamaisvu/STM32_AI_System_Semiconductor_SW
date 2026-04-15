@@ -42,6 +42,11 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined library search paths
 )
 
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -u _printf_float
+)
+
+
 # 1. 소스 파일 변수 정의
 # GLOB_RECURSE는 하위 폴더의 모든 .c 파일을 재귀적으로 찾습니다.
 file(GLOB_RECURSE SRC_FILES "MyApp/*.c")

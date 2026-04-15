@@ -11,6 +11,7 @@ void hwInit(void)
     uartInit();
     cliInit();
     buttonInit();
+    tempInit();
     // uartOpen(0, 9600);
 
 }
