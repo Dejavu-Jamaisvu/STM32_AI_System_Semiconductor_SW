@@ -42,12 +42,87 @@ static cli_input_state_t input_state=CLI_STATE_NORMAL;
 // Refactoring CLI function
 static void cliRedrawTail(void){
 
+    // 줄의 시작으로 이동(\r) 후 줄 끝까지 삭제(\x1B[K)
+    cliPrintf("\r\x1B[KCLI> "); 
 }
-static void handleEnterKey(void){}
-static void handleBackspace(void){}
-static void handleCharInsert(uint8_t c){}
-static void handleArrowKeys(uint8_t rx_data){}
-static void processAnsiEscape(uint8_t rx_data){}
+static void handleEnterKey(void)
+{
+
+    cliPrintf("\r\n");
+    cli_line_buf[cli_line_idx] = '\0';
+
+    // 실행전 히스토리 버퍼에 복사
+    strncpy(cli_history_buf[cli_hist_write], cli_line_buf, CLI_LINE_BUF_MAX - 1);
+    cli_hist_write = (cli_hist_write + 1) % CLI_HIST_MAX;
+    cli_hist_depth = 0;
+    if (cli_hist_count < CLI_HIST_MAX)
+        cli_hist_count++;
+
+    cliParseArgs(cli_line_buf);
+    cliRunCommand();
+
+    cliPrintf("CLI> ");
+    cli_line_idx = 0;
+}
+static void handleBackspace(void){
+
+    if (cli_line_idx > 0) {
+        cli_line_idx--;
+        cliPrintf("\b \b"); // 한 글자 지우기 터미널 시퀀스
+    }
+}
+
+
+static void handleCharInsert(uint8_t c){
+    if (cli_line_idx < CLI_LINE_BUF_MAX - 1) {
+        cli_line_buf[cli_line_idx++] = c;
+        cliPrintf("%c", c);
+    }
+}
+static void handleArrowKeys(uint8_t rx_data){
+
+    if (rx_data == 'A') { // 위 화살표 (이전 기록)
+        if (cli_hist_depth < cli_hist_count) {
+            cli_hist_depth++;
+            int idx = (cli_hist_write + CLI_HIST_MAX - cli_hist_depth) % CLI_HIST_MAX;
+            
+            cliRedrawTail();
+            strncpy(cli_line_buf, cli_history_buf[idx], CLI_LINE_BUF_MAX - 1);
+            cli_line_idx = strlen(cli_line_buf);
+            cliPrintf("%s", cli_line_buf);
+        }
+    } 
+    else if (rx_data == 'B') { // 아래 화살표 (다음 기록)
+        if (cli_hist_depth > 0) {
+            cli_hist_depth--;
+            cliRedrawTail();
+
+            if (cli_hist_depth == 0) {
+                cli_line_idx = 0;
+                cli_line_buf[0] = '\0';
+            } else {
+                int idx = (cli_hist_write + CLI_HIST_MAX - cli_hist_depth) % CLI_HIST_MAX;
+                strncpy(cli_line_buf, cli_history_buf[idx], CLI_LINE_BUF_MAX - 1);
+                cli_line_idx = strlen(cli_line_buf);
+                cliPrintf("%s", cli_line_buf);
+            }
+        }
+    }
+}
+static void processAnsiEscape(uint8_t rx_data){
+
+    if (input_state == CLI_STATE_ESC_RCVD) {
+        if (rx_data == '[') {
+            input_state = CLI_STATE_BRACKET_RCVD;
+        } else {
+            input_state = CLI_STATE_NORMAL;
+        }
+    } 
+    else if (input_state == CLI_STATE_BRACKET_RCVD) {
+        handleArrowKeys(rx_data);
+        input_state = CLI_STATE_NORMAL;
+    }
+}
 
 void cliMain(void)
 {
@@ -145,6 +220,9 @@ void cliRunCommand()
     }
 }
 
+
+
+////
 bool cliAdd(const char *cmd_str, void (*cmd_func)(uint8_t argc, char **argv))
 { // char* argv[]
 
@@ -163,7 +241,7 @@ bool cliAdd(const char *cmd_str, void (*cmd_func)(uint8_t argc, char **argv))
     cli_cmd_count++;
     return true;
 }
-
+////
 void cliMain_()
 {
     if (uartAvailable(0) > 0) {
