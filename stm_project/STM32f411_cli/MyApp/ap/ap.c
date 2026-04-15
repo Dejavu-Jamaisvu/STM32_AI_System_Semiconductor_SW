@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h> // atoi()를 위해 추가
 #include <string.h>
+#include <sys/types.h>
 
 // button on/off => enable/disable
 void cliButton(uint8_t argc, char **argv)
@@ -168,23 +169,39 @@ void cliGpio(uint8_t argc, char **argv)
         cliPrintf("       gpio write[a~h][0~15] [0|1]\r\n");
     }
 }
+
+static u_int32_t led_toggle_period = 0;
 void cliLed(uint8_t argc, char **argv)
 {
-    if (argc == 2) {
+    if (argc >=2) {////
         if (strcmp(argv[1], "on") == 0) {
+            led_toggle_period = 0;
             ledOn();
             cliPrintf("LED ON\r\n");
         } else if (strcmp(argv[1], "off") == 0) {
+            led_toggle_period = 0;
             ledOff();
             cliPrintf("LED OFF\r\n");
         } else if (strcmp(argv[1], "toggle") == 0) {
+            if (argc == 3) {
+                led_toggle_period = atoi(argv[2]);
+                if(led_toggle_period>=0){
+                    cliPrintf("LED Auto-Toggled!!\r\n");
+                }else{
+                    cliPrintf("Invalid Period\r\n");
+                }
+            }
+            // led_toggle_period=strtoul(argv[2],null,0);
+
             ledToggle();
             cliPrintf("LED TOGGLE\r\n");
         } else {
             cliPrintf("Invalid Command\r\n");
         }
     } else {
-        cliPrintf("Usage: led [on|off|toggle]\r\n");
+        cliPrintf("Usage: led [on|off]\r\n");
+        cliPrintf("     : led toggle\r\n");
+        cliPrintf("     : led toggle [period]\r\n");
     }
 }
 
@@ -240,11 +257,15 @@ void apInit()
 void ledSystemTask(void *argument)
 {
    
-
-
     while (1) {
-        ledToggle();
-        osDelay(1000);
+        if(led_toggle_period > 0){
+            ledToggle();
+            osDelay(led_toggle_period);
+        }
+        else{
+            osDelay(50);
+        }
+            
     }
 }
 
@@ -252,13 +273,14 @@ void apMain()
 {
     //osThreadId_t ledSystemTaskHandle;
     
-    const osThreadAttr_t ledSystemTask_attributes = {
-        .name = "ledSystemTask",
-        .stack_size = 128 * 4,
-        .priority = (osPriority_t)osPriorityNormal,
+    // const osThreadAttr_t ledSystemTask_attributes = {
+    //     .name = "ledSystemTask",
+    //     .stack_size = 128 * 4,
+    //     .priority = (osPriority_t)osPriorityNormal,
 
-    };
-    osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
+    // };
+    // osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
+    
     //ledSystemTaskHandle = osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
 
 
