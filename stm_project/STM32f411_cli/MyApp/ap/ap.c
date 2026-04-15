@@ -9,6 +9,39 @@
 #include <stdlib.h> // atoi()를 위해 추가
 #include <string.h>
 
+// button on/off => enable/disable
+void cliButton(uint8_t argc, char **argv)
+{
+    // 인자가 2개 들어왔을 때 (명령어 + on/off)
+    if (argc == 2)
+    {
+        if (strcmp(argv[1], "on") == 0)
+        {
+            buttonEnable(true);
+            cliPrintf("Button Interrupt Report: ON\r\n");
+        }
+        else if (strcmp(argv[1], "off") == 0)
+        {
+            buttonEnable(false);
+            cliPrintf("Button Interrupt Report: OFF\r\n");
+        }
+        else
+        {
+            // on/off 외의 다른 인자가 들어온 경우
+            cliPrintf("Usage: button [on/off]\r\n");
+        }
+    }
+    // 인자가 없거나 잘못된 경우 현재 상태 출력
+    else
+    {
+        cliPrintf("Usage: button [on/off]\r\n");
+        
+        // 현재 상태가 true면 "ON", false면 "OFF" 출력
+        cliPrintf("Current Status: %s\r\n", buttonGetEnable() ? "ON" : "OFF");
+    }
+}
+
+
 static bool isSafeAddress(uint32_t addr)
 {
     // 1. f411 flash
@@ -200,6 +233,7 @@ void apInit()
     cliAdd("sys", cliSys);
     cliAdd("gpio", cliGpio);
     cliAdd("md", cliMd);
+    cliAdd("button", cliButton);
 }
 
 void apMain()

@@ -6,6 +6,8 @@
 #include "uart.h"
 #include "cli.h"
 #include "my_gpio.h"//main.h 뒤에 위치해야함
+#include "button.h"
+
 
 void hwInit(void);
 
