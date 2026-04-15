@@ -309,6 +309,6 @@ void apMain()
         // HAL_Delay(500);
 
         cliMain();
-        osDelay(1);
+        // osDelay(1);
     }
 }
