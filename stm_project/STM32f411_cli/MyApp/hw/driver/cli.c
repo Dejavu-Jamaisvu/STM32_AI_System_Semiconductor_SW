@@ -1,4 +1,5 @@
 #include "cli.h"
+#include "uart.h"
 
 #include <stdint.h>
 
@@ -30,8 +31,53 @@ static uint8_t cli_hist_write = 0;
 static uint8_t cli_hist_depth = 0;
 
 
+typedef enum{
+    CLI_STATE_NORMAL=0,
+    CLI_STATE_ESC_RCVD,
+    CLI_STATE_BRACKET_RCVD
+}cli_input_state_t;
 
+static cli_input_state_t input_state=CLI_STATE_NORMAL;
 
+// Refactoring CLI function
+static void cliRedrawTail(void){
+
+}
+static void handleEnterKey(void){}
+static void handleBackspace(void){}
+static void handleCharInsert(uint8_t c){}
+static void handleArrowKeys(uint8_t rx_data){}
+static void processAnsiEscape(uint8_t rx_data){}
+
+void cliMain(void)
+{
+    if (uartAvailable(0) == 0)
+        return;
+
+    uint8_t rx_data = uartRead(0);
+    if (input_state != CLI_STATE_NORMAL) {
+
+        processAnsiEscape(rx_data);
+        return;
+    }
+    switch (rx_data) {
+    case 0x1B:
+        input_state = CLI_STATE_ESC_RCVD;
+        break;
+    case '\r':
+    case '\n':
+        handleEnterKey();
+        break;
+    case '\b': // backspace
+    case 127:
+        handleBackspace();
+        break;
+    default:
+        if (32 <= rx_data && rx_data < 126)
+            handleCharInsert(rx_data);
+        break;
+    }
+}
 
 static void cliHelp(uint8_t argc, char **argv)
 {
@@ -118,7 +164,7 @@ bool cliAdd(const char *cmd_str, void (*cmd_func)(uint8_t argc, char **argv))
     return true;
 }
 
-void cliMain()
+void cliMain_()
 {
     if (uartAvailable(0) > 0) {
         uint8_t rx_data = uartRead(0);
