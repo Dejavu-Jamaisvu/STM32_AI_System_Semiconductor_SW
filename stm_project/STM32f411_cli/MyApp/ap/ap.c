@@ -1,5 +1,6 @@
 #include "bsp.h"
 #include "cli.h"
+#include "cmsis_os2.h"
 #include "hw_def.h"
 #include "main.h" //
 
@@ -236,10 +237,33 @@ void apInit()
     cliAdd("button", cliButton);
 }
 
+void ledSystemTask(void *argument)
+{
+   
+
+
+    while (1) {
+        ledToggle();
+        osDelay(1000);
+    }
+}
+
 void apMain()
 {
+    //osThreadId_t ledSystemTaskHandle;
+    
+    const osThreadAttr_t ledSystemTask_attributes = {
+        .name = "ledSystemTask",
+        .stack_size = 128 * 4,
+        .priority = (osPriority_t)osPriorityNormal,
 
-    uartPrintf(0, "HEllOW world!! \r\n"); //(uint8_t *)
+    };
+    osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
+    //ledSystemTaskHandle = osThreadNew(ledSystemTask, NULL, &ledSystemTask_attributes);
+
+
+    //uartPrintf(0, "HEllOW world!! \r\n"); //(uint8_t *)
+    uartPrintf(0, "LED Task Started!! \r\n"); //(uint8_t *)
 
     while (1) {
 
@@ -263,5 +287,6 @@ void apMain()
         // HAL_Delay(500);
 
         cliMain();
+        osDelay(1);
     }
 }
