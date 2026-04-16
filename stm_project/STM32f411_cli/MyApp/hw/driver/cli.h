@@ -3,7 +3,7 @@
 
 #include "def.h"
 #include "hw_def.h"
-// #include "uart.h"
+#include "uart.h"
 
 // #include <stdint.h>
 // #include <string.h>
