@@ -1,5 +1,9 @@
 
-#include "uart.h"  
+#include "uart.h"
+
+#include "cmsis_os2.h"
+
+// #include <cstddef>
 // #include "cmsis_os.h"
 // #include "cmsis_os2.h"
 // #include "stm32f4xx_hal_uart.h"
@@ -10,6 +14,8 @@ extern UART_HandleTypeDef huart2;
 
 static osMessageQueueId_t uart_rx_q = NULL;
 
+static osMutexId_t uart_tx_mutex = NULL;
+
 #define TIMEOUT 100
 
 #define UART_RX_BUF_LENGTH 256
@@ -19,25 +25,26 @@ static uint32_t rx_buf_head = 0;
 static uint32_t rx_buf_tail = 0;
 static uint8_t rx_data = 0;
 
+bool uartInit(void)
+{
 
-
-bool uartInit(void){
-
-    if(uart_rx_q == NULL){
+    if (uart_rx_q == NULL) {
         uart_rx_q = osMessageQueueNew(UART_RX_BUF_LENGTH, sizeof(uint8_t), NULL);
     }
 
+    if (uart_tx_mutex == NULL) {
+        uart_tx_mutex = osMutexNew(NULL);
+    }
     bool ret = uartOpen(0, 9600);
 
     HAL_UART_Receive_IT(&huart2, &rx_data, 1);
 
     // return uartOpen(0, 115200);
     return ret;
-    
-
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
 
     if (huart->Instance == USART2) {
         // rx_buf[rx_buf_head] = rx_data;
@@ -81,8 +88,6 @@ uint8_t uartRead(uint8_t ch)
     }
 
     return ret;
-
-
 }
 
 bool uartReadBlock(uint8_t ch, uint8_t *p_data, uint32_t timeout)
@@ -118,12 +123,26 @@ bool uartClose(uint8_t ch)
 
 uint32_t uartWrite(uint8_t ch, uint8_t *p_data, uint32_t len)
 {
-    if (HAL_UART_Transmit(&huart2, p_data, len, TIMEOUT) == HAL_OK)
-        return len;
+    if (uart_tx_mutex == NULL)
+        return 0;
+    osMutexAcquire(uart_tx_mutex, osWaitForever);
 
-    return 0;
+    // if (HAL_UART_Transmit(&huart2, p_data, len, TIMEOUT) == HAL_OK) {
+    //     osDelay(1);
+    //     osMutexRelease(uart_tx_mutex);
+    // } else {
+    //     osDelay(1);
+    // }
+
+    if (HAL_UART_Transmit(&huart2, p_data, len, TIMEOUT) == HAL_OK) {
+    } else {
+        len = 0;
+    }
+
+    osMutexRelease(uart_tx_mutex);
+
+    return len;
 }
-
 uint32_t uartPrintf(uint8_t ch, const char *fmt, ...)
 {
 
