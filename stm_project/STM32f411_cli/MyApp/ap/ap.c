@@ -3,6 +3,7 @@
 #include "cmsis_os2.h"
 #include "hw_def.h"
 #include "main.h" //
+#include "ap.h" 
 
 #include <ctype.h> // tolower()를 위해 추가
 #include <stdbool.h>
@@ -10,6 +11,7 @@
 #include <stdlib.h> // atoi()를 위해 추가
 #include <string.h>
 #include <sys/types.h>
+
 
 // button on/off => enable/disable
 void cliButton(uint8_t argc, char **argv)
@@ -263,6 +265,24 @@ void cliTemp(uint8_t argc, char **argv)
         cliPrintf("     : temp [period]\r\n");
     }
 }
+
+void StartDefaultTask(void *argument)
+{
+  /* USER CODE BEGIN StartDefaultTask */
+  
+  // #include "ap.h"
+  // apInit();
+  // apMain();
+  
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartDefaultTask */
+}
+
+
 void ledSystemTask(void *argument)
 {
    
