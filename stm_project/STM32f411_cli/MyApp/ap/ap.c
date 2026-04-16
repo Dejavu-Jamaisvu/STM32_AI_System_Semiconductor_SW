@@ -311,18 +311,16 @@ void tempSystemTask(void *argument)
 void apStopAutoTask(void)
 {
     led_toggle_period = 0;
-    temp_report_period  = 0;
+    temp_report_period = 0;
     tempStopAuto();
     ledOff();
 }
 
 void apInit()
-{   
+{
     LOG_INF("Application Init... Started");
     hwInit();
     cliSetCtrlHandler(apStopAutoTask);
-
-
 
     cliAdd("led", cliLed);
     cliAdd("info", cliInfo);
