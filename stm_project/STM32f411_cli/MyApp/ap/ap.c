@@ -1,6 +1,7 @@
 
 #include "ap.h"
 
+#include "cli.h"
 #include "log_DEF.h"
 
 // button on/off => enable/disable
@@ -316,8 +317,13 @@ void apStopAutoTask(void)
 }
 
 void apInit()
-{
+{   
+    LOG_INF("Application Init... Started");
     hwInit();
+    cliSetCtrlHandler(apStopAutoTask);
+
+
+
     cliAdd("led", cliLed);
     cliAdd("info", cliInfo);
     cliAdd("sys", cliSys);

@@ -35,6 +35,8 @@ static uint8_t cli_hist_depth = 0;
 typedef enum { CLI_STATE_NORMAL = 0, CLI_STATE_ESC_RCVD, CLI_STATE_BRACKET_RCVD } cli_input_state_t;
 
 static cli_input_state_t input_state = CLI_STATE_NORMAL;
+static cli_callback_t ctrl_c_handler = NULL;
+
 
 // Refactoring CLI function
 static void handleEnterKey(void)
@@ -135,7 +137,8 @@ void cliMain(void)
         switch (rx_data) {
 
         case 0x03:
-            apStopAutoTask();
+            // apStopAutoTask();
+            if(ctrl_c_handler != NULL) ctrl_c_handler();
             cliPrintf("^C \r\nCLI>");
             cli_line_idx = 0;
             break;
@@ -179,6 +182,11 @@ void cliInit()
     cliAdd("help", cliHelp);
     cliAdd("cls", cliClear);
     cliAdd("log", cliLog);
+}
+
+void cliSetCtrlHandler(cli_callback_t handler)
+{
+    ctrl_c_handler = handler;
 }
 
 void cliPrintf(const char *fmt, ...)
