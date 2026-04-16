@@ -1,5 +1,6 @@
 
 #include "ap.h" 
+#include "log_DEF.h"
 
 // button on/off => enable/disable
 void cliButton(uint8_t argc, char **argv)
@@ -163,30 +164,38 @@ void cliGpio(uint8_t argc, char **argv)
 static u_int32_t led_toggle_period = 0;
 void cliLed(uint8_t argc, char **argv)
 {
-    if (argc >=2) {////
+    if (argc >=2) {
         if (strcmp(argv[1], "on") == 0) {
             led_toggle_period = 0;
             ledOn();
-            cliPrintf("LED ON\r\n");
+            LOG_INF("LED ON");
+            // cliPrintf("LED ON\r\n");
         } else if (strcmp(argv[1], "off") == 0) {
             led_toggle_period = 0;
             ledOff();
-            cliPrintf("LED OFF\r\n");
+            LOG_INF("LED OFF");
+            // cliPrintf("LED OFF\r\n");
         } else if (strcmp(argv[1], "toggle") == 0) {
             if (argc == 3) {
                 led_toggle_period = atoi(argv[2]);
                 if(led_toggle_period>=0){
-                    cliPrintf("LED Auto-Toggled!!\r\n");
+                    
+                    LOG_INF("LED Auto-Toggled!!");
+                    // cliPrintf("LED Auto-Toggled!!\r\n");
                 }else{
-                    cliPrintf("Invalid Period\r\n");
+                    LOG_INF("Invalid Period");
+                    // cliPrintf("Invalid Period\r\n");
                 }
             }
             // led_toggle_period=strtoul(argv[2],null,0);
 
             ledToggle();
-            cliPrintf("LED TOGGLE\r\n");
+            
+            LOG_INF("LED TOGGLE");
+            // cliPrintf("LED TOGGLE\r\n");
         } else {
-            cliPrintf("Invalid Command\r\n");
+            LOG_INF("Invalid Command");
+            // cliPrintf("Invalid Command\r\n");
         }
     } else {
         cliPrintf("Usage: led [on|off]\r\n");
@@ -284,6 +293,7 @@ void ledSystemTask(void *argument)
    
     while (1) {
         if(led_toggle_period > 0){
+            LOG_DBG("LED Toggle!");
             ledToggle();
             osDelay(led_toggle_period);
         }

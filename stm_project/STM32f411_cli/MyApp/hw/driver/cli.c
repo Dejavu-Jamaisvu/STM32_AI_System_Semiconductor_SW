@@ -192,6 +192,7 @@ void cliInit()
 
   cliAdd("help", cliHelp);
   cliAdd("cls", cliClear);
+  cliAdd("log", cliLog);
 }
 
 void cliPrintf(const char *fmt, ...)

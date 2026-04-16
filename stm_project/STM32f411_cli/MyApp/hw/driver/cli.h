@@ -1,14 +1,10 @@
 #ifndef HW_DRIVER_CLI_H_
 #define HW_DRIVER_CLI_H
 
-#include "def.h"
 #include "hw_def.h"
 #include "uart.h"
+#include "log.h"
 
-// #include <stdint.h>
-// #include <string.h>
-// #include <stdarg.h>
-// #include <stdio.h>
 
 void cliInit();
 void cliMain();
