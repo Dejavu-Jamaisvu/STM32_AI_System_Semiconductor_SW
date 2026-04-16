@@ -1,39 +1,32 @@
 
-#include "ap.h" 
+#include "ap.h"
+
 #include "log_DEF.h"
 
 // button on/off => enable/disable
 void cliButton(uint8_t argc, char **argv)
 {
     // 인자가 2개 들어왔을 때 (명령어 + on/off)
-    if (argc == 2)
-    {
-        if (strcmp(argv[1], "on") == 0)
-        {
+    if (argc == 2) {
+        if (strcmp(argv[1], "on") == 0) {
             buttonEnable(true);
             cliPrintf("Button Interrupt Report: ON\r\n");
-        }
-        else if (strcmp(argv[1], "off") == 0)
-        {
+        } else if (strcmp(argv[1], "off") == 0) {
             buttonEnable(false);
             cliPrintf("Button Interrupt Report: OFF\r\n");
-        }
-        else
-        {
+        } else {
             // on/off 외의 다른 인자가 들어온 경우
             cliPrintf("Usage: button [on/off]\r\n");
         }
     }
     // 인자가 없거나 잘못된 경우 현재 상태 출력
-    else
-    {
+    else {
         cliPrintf("Usage: button [on/off]\r\n");
-        
+
         // 현재 상태가 true면 "ON", false면 "OFF" 출력
         cliPrintf("Current Status: %s\r\n", buttonGetEnable() ? "ON" : "OFF");
     }
 }
-
 
 static bool isSafeAddress(uint32_t addr)
 {
@@ -82,8 +75,7 @@ void cliMd(uint8_t argc, char **argv)
                         uint8_t val = *((volatile uint8_t *)target_addr);
 
                         cliPrintf("%02X ", val);
-                    }
-                    else {
+                    } else {
 
                         cliPrintf("Not valid address!!\r\n");
                         break;
@@ -164,7 +156,7 @@ void cliGpio(uint8_t argc, char **argv)
 static u_int32_t led_toggle_period = 0;
 void cliLed(uint8_t argc, char **argv)
 {
-    if (argc >=2) {
+    if (argc >= 2) {
         if (strcmp(argv[1], "on") == 0) {
             led_toggle_period = 0;
             ledOn();
@@ -178,11 +170,11 @@ void cliLed(uint8_t argc, char **argv)
         } else if (strcmp(argv[1], "toggle") == 0) {
             if (argc == 3) {
                 led_toggle_period = atoi(argv[2]);
-                if(led_toggle_period>=0){
-                    
+                if (led_toggle_period >= 0) {
+
                     LOG_INF("LED Auto-Toggled!!");
                     // cliPrintf("LED Auto-Toggled!!\r\n");
-                }else{
+                } else {
                     LOG_INF("Invalid Period");
                     // cliPrintf("Invalid Period\r\n");
                 }
@@ -190,7 +182,7 @@ void cliLed(uint8_t argc, char **argv)
             // led_toggle_period=strtoul(argv[2],null,0);
 
             ledToggle();
-            
+
             LOG_INF("LED TOGGLE");
             // cliPrintf("LED TOGGLE\r\n");
         } else {
@@ -251,14 +243,14 @@ void cliTemp(uint8_t argc, char **argv)
             tempStopAuto();
         }
         temp_report_period = 0;
-        float t=tempReadSingle();
+        float t = tempReadSingle();
         cliPrintf("Current Temp: %.2f C\r\n", t);
 
     } else if (argc == 2) {
 
         int period = atoi(argv[1]);
         if (period > 0) {
-        tempStartAuto();
+            tempStartAuto();
             temp_report_period = period;
             cliPrintf("Temperature Auto-Read Started (%d ms)\r\n", period);
         } else {
@@ -273,34 +265,30 @@ void cliTemp(uint8_t argc, char **argv)
 
 void StartDefaultTask(void *argument)
 {
-  /* USER CODE BEGIN StartDefaultTask */
-  
-  apInit();
-  
-  /* Infinite loop */
-  for(;;)
-  {
-    
-    apMain();
-    osDelay(1);
-  }
-  /* USER CODE END StartDefaultTask */
-}
+    /* USER CODE BEGIN StartDefaultTask */
 
+    apInit();
+
+    /* Infinite loop */
+    for (;;) {
+
+        apMain();
+        osDelay(1);
+    }
+    /* USER CODE END StartDefaultTask */
+}
 
 void ledSystemTask(void *argument)
 {
-   
+
     while (1) {
-        if(led_toggle_period > 0){
+        if (led_toggle_period > 0) {
             LOG_DBG("LED Toggle!");
             ledToggle();
             osDelay(led_toggle_period);
-        }
-        else{
+        } else {
             osDelay(50);
         }
-            
     }
 }
 void tempSystemTask(void *argument)
@@ -318,6 +306,15 @@ void tempSystemTask(void *argument)
         }
     }
 }
+
+void apStopAutoTask(void)
+{
+    led_toggle_period = 0;
+    temp_report_period  = 0;
+    tempStopAuto();
+    ledOff();
+}
+
 void apInit()
 {
     hwInit();

@@ -9,5 +9,6 @@
 
 void apInit(void);
 void apMain(void);
+void apStopAutoTask(void);
 
 #endif // AP_AP_H_
