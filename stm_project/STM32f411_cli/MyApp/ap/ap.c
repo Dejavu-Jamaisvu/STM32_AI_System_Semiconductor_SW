@@ -1,17 +1,5 @@
-#include "bsp.h"
-#include "cli.h"
-#include "cmsis_os2.h"
-#include "hw_def.h"
-#include "main.h" //
+
 #include "ap.h" 
-
-#include <ctype.h> // tolower()를 위해 추가
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h> // atoi()를 위해 추가
-#include <string.h>
-#include <sys/types.h>
-
 
 // button on/off => enable/disable
 void cliButton(uint8_t argc, char **argv)

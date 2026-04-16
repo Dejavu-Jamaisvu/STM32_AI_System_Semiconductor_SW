@@ -1,11 +1,11 @@
 
 #include "uart.h"  
-#include "cmsis_os.h"
-#include "cmsis_os2.h"
-#include "stm32f4xx_hal_uart.h"
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+// #include "cmsis_os.h"
+// #include "cmsis_os2.h"
+// #include "stm32f4xx_hal_uart.h"
+// #include <stdint.h>
+// #include <stdio.h>
+// #include <string.h>
 extern UART_HandleTypeDef huart2;
 
 static osMessageQueueId_t uart_rx_q = NULL;

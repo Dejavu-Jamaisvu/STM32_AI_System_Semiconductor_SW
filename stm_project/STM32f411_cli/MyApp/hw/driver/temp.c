@@ -1,7 +1,7 @@
 #include "temp.h"
-#include <stdint.h>
-#include "adc.h"
-#include "stm32f4xx_hal_adc.h"
+// #include <stdint.h>
+// #include "adc.h"
+// #include "stm32f4xx_hal_adc.h"
 
 bool tempInit()
 {

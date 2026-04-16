@@ -1,13 +1,14 @@
 #ifndef __HW_DRIVER_LED_H__
 #define __HW_DRIVER_LED_H__
 
-#include "hw_def.h" ////추가됐넹
+#include "hw_def.h" 
+
 #include "led.h"
 #include "uart.h"
-#include "cli.h"
-#include "my_gpio.h"//main.h 뒤에 위치해야함
+#include "my_gpio.h"
 #include "button.h"
 #include "temp.h"
+#include "cli.h"
 
 
 void hwInit(void);

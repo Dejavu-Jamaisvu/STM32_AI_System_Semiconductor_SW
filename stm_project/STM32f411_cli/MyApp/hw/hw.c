@@ -2,8 +2,6 @@
 
 // #include "hw_def.h"
 #include "hw.h"
-#include "driver/button.h"
-#include "driver/cli.h"
 
 void hwInit(void)
 {
