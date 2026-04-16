@@ -258,13 +258,13 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   
-  // #include "ap.h"
-  // apInit();
-  // apMain();
+  apInit();
   
   /* Infinite loop */
   for(;;)
   {
+    
+    apMain();
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
