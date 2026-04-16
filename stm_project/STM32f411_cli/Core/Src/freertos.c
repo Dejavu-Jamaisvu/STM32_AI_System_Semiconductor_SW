@@ -137,9 +137,9 @@ __weak void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   
-  #include "ap.h"
-  apInit();
-  apMain();
+  // #include "ap.h"
+  // apInit();
+  // apMain();
   
   /* Infinite loop */
   for(;;)
