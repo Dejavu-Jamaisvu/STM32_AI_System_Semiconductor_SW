@@ -160,7 +160,7 @@ void monitorSendPacket()
         // 종료#
         len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "#\r\n");
 
-        uartWrite(0, tx_buf, len);
+        uartWrite(0, (uint8_t *)tx_buf, len);
 
         osMutexRelease(monitor_mtx);
     }
