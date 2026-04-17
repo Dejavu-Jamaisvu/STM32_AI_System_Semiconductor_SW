@@ -65,7 +65,7 @@ const osThreadAttr_t myTaskLed_attributes = {
 osThreadId_t myTaskTempHandle;
 const osThreadAttr_t myTaskTemp_attributes = {
   .name = "myTaskTemp",
-  .stack_size = 256 * 4,
+  .stack_size = 512 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for myTaskMonitor */
