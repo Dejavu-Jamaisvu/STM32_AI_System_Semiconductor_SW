@@ -237,6 +237,7 @@ void cliSys(uint8_t argc, char **argv)
     }
 }
 static uint32_t temp_report_period = 0; // 0이면 출력 정지
+
 void cliTemp(uint8_t argc, char **argv)
 {
     if (argc == 1) {
@@ -275,7 +276,7 @@ void StartDefaultTask(void *argument)
     for (;;) {
 
         apMain();
-        osDelay(1);
+        // osDelay(1);
     }
     /* USER CODE END StartDefaultTask */
 }
@@ -330,7 +331,8 @@ void monitorSystemTask(void *argument)
         if(isMonitoringOn()){
             monitorSendPacket();
         }
-        osDelay(1000);
+        // osDelay(1000);
+        osDelay(monitorGetPeriod());
     }
 }
 
@@ -342,6 +344,20 @@ void apStopAutoTask(void)
     ledOff();
 }
 
+//내가 추가
+void updateModulePeriods(uint32_t new_period) {
+    // 1. 온도 센서 업데이트 주기 변수 변경
+    temp_report_period = new_period; 
+    
+    // 2. LED 토글 주기 변수 변경 (동기화를 원할 경우)
+    led_toggle_period = new_period; 
+
+    // 필요하다면 하위 드라이버 설정 함수 호출 (만들어두셨다면)
+    // tempSetUpdatePeriod(new_period); 
+    
+    // LOG_INF("All modules synchronized to %d ms", new_period);
+}
+
 void apInit()
 {   
     
@@ -350,7 +366,7 @@ void apInit()
     monitorInit();
 
     cliSetCtrlHandler(apStopAutoTask);
-
+    monitorSetSyncHandler(updateModulePeriods);
 
 
     cliAdd("led", cliLed);

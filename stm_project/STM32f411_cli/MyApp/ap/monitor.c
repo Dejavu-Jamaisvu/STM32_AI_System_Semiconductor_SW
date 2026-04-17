@@ -1,14 +1,5 @@
 
 #include "monitor.h"
-#include "cli.h"
-#include "cmsis_os.h"
-#include "cmsis_os2.h"
-#include "log_def.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/_intsup.h>
-#include <sys/types.h>
 
 // #define LOG_TAG "MON"
 
@@ -21,6 +12,44 @@ MONITOR_MODE_ASCII
 static monitor_packet_t g_packet;
 static osMutexId_t monitor_mtx=NULL;
 static monitor_mode_t current_mointor_mode=MONITOR_MODE_OFF;
+
+
+
+static uint32_t monitor_period = 1000; // 기본값 1초
+static monitor_sync_cb_t sync_handler = NULL; // 콜백 함수 포인터
+
+// 1. 모니터링 정지
+void monitorOff(void) {
+    current_mointor_mode = MONITOR_MODE_OFF;
+    LOG_INF("Monitoring Stopped.");
+}
+
+// 2. 현재 설정된 주기 읽기
+uint32_t monitorGetPeriod(void) {
+    return monitor_period;
+}
+
+// 3. 주기 설정 및 동기화 알림
+void monitorSetPeriod(uint32_t period) {
+    if (period > 0) {
+        monitor_period = period;
+        // 주기가 변경되었음을 다른 모듈(핸들러)에 알림
+        if (sync_handler != NULL) {
+            sync_handler(monitor_period);
+        }
+        LOG_INF("Monitor Period Set to: %d ms", period);
+    }
+}
+
+// 4. 동기화 핸들러 등록 (다른 모듈에서 호출)
+void monitorSetSyncHandler(monitor_sync_cb_t handler) {
+    sync_handler = handler;
+}
+
+
+
+
+
 
 
 
@@ -45,14 +74,29 @@ static void cliMonitor(uint8_t argc, char **argv){
         LOG_INF("Monitoring Mod: OFF (Text mode Restored)");
         
         return;
+        }// 주기 설정 (예: mon period 500)
+        else if (strcmp(argv[1], "period") == 0) {
+            if (argc == 3) {
+                uint32_t period = (uint32_t)strtoul(argv[2], NULL, 10);
+                if (period < 10) period = 10; // 너무 빠르면 시스템 마비됨
+                
+                monitorSetPeriod(period); // 여기서 sync_handler 호출됨
+                LOG_INF("Monitor Period Changed to %d ms", period);
+            } else {
+                LOG_INF("Usage: mon period [ms]");
+            }
+            return; // 처리 완료 후 리턴
         }
     }
-    LOG_INF("Usage: monitor [on|off])");
+    // LOG_INF("Usage: monitor [on|off])");
+    LOG_INF("Usage: mon [on|off|period]");
+    
     if (current_mointor_mode == MONITOR_MODE_ASCII) {
-        LOG_INF("Current Mode: ON(ASCII)");
-    }else {
-        LOG_INF("Current Mode: OFF (Text mode Restored)");
+        LOG_INF("Current Status: ON(ASCII)");
+    } else {
+        LOG_INF("Current Status: OFF");
     }
+    
 }
 
 void monitorInit(void)
