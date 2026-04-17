@@ -3,6 +3,7 @@
 
 #include "cli.h"
 #include "log_DEF.h"
+#include "monitor.h"
 
 // button on/off => enable/disable
 void cliButton(uint8_t argc, char **argv)
@@ -279,6 +280,8 @@ void StartDefaultTask(void *argument)
     /* USER CODE END StartDefaultTask */
 }
 
+
+
 void ledSystemTask(void *argument)
 {
 
@@ -286,8 +289,18 @@ void ledSystemTask(void *argument)
         if (led_toggle_period > 0) {
             LOG_DBG("LED Toggle!");
             ledToggle();
+            bool led_state = ledGetStatus();
+            if(isMonitoringOn())
+                monitorUpdateValue(ID_OUT_LED_STATE, TYPE_BOOL, &led_state);
+            else
+                LOG_DBG("LED Toggle!");
+
             osDelay(led_toggle_period);
         } else {
+            bool led_state = ledGetStatus();
+            if(isMonitoringOn())
+                monitorUpdateValue(ID_OUT_LED_STATE, TYPE_BOOL, &led_state);
+            
             osDelay(50);
         }
     }
@@ -297,14 +310,27 @@ void tempSystemTask(void *argument)
     while (1) {
 
         if (temp_report_period > 0) {
-            float t = tempReadAuto(); // ADC를 통해 온도를 계산하는 함수
-            cliPrintf("Current Temp: %.2f C\r\n", t);
-
+            float t = tempReadAuto(); 
+            
+            if(isMonitoringOn())
+                monitorUpdateValue(ID_ENV_TEMP, TYPE_FLOAT, &t);
+            else
+                cliPrintf("Current Temp: %.2f C\r\n", t);
+            
             osDelay(temp_report_period);
         } else {
-            // 출력이 꺼져있을 때는 낮은 주기로 대기하여 CPU 점유율 방지
+            
             osDelay(50);
         }
+    }
+}
+void monitorSystemTask(void *argument)
+{
+    while (1) {
+        if(isMonitoringOn()){
+            monitorSendPacket();
+        }
+        osDelay(1000);
     }
 }
 
@@ -318,8 +344,11 @@ void apStopAutoTask(void)
 
 void apInit()
 {   
-    LOG_INF("Application Init... Started");
+    
     hwInit();
+    LOG_INF("Application Init... Started");
+    monitorInit();
+
     cliSetCtrlHandler(apStopAutoTask);
 
 

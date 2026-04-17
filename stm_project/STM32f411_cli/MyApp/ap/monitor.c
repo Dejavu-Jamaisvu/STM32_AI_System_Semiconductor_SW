@@ -22,6 +22,8 @@ static monitor_packet_t g_packet;
 static osMutexId_t monitor_mtx=NULL;
 static monitor_mode_t current_mointor_mode=MONITOR_MODE_OFF;
 
+
+
 static uint8_t calChecksum(uint8_t *data, uint32_t len)
 {
     uint8_t sum = 0;
@@ -38,12 +40,12 @@ static void cliMonitor(uint8_t argc, char **argv){
             current_mointor_mode = MONITOR_MODE_ASCII;
             LOG_INF("Monitor mode: ON(ASCII)\n");
             return;
-        } 
-    } else if(strcmp(argv[1], "off") == 0){
+        }else if(strcmp(argv[1], "off") == 0){
         current_mointor_mode = MONITOR_MODE_OFF;
         LOG_INF("Monitoring Mod: OFF (Text mode Restored)");
         
         return;
+        }
     }
     LOG_INF("Usage: monitor [on|off])");
     if (current_mointor_mode == MONITOR_MODE_ASCII) {
@@ -84,11 +86,11 @@ void monitorUpdateValue(SensorID id, DataType type, void *p_val) {
     //new sensor
     if ( -1 == target_idx) {
         if (g_packet.count < MAX_SENSOR_NODES) {
-            target_idx = g_packet.count++;
+            target_idx = g_packet.count;
             g_packet.nodes[target_idx].id = (uint8_t)id;
             g_packet.count++;
         } else {
-            LOG_WRN("Monitor packet full, cannot add new sensor data");
+            //LOG_WRN("Monitor packet full, cannot add new sensor data");
             osMutexRelease(monitor_mtx);
             return;
         }
@@ -115,50 +117,51 @@ void monitorSendPacket()
 
     osMutexAcquire(monitor_mtx, osWaitForever);
 
+    // uint8_t tx_buf[256];
+    // uint32_t len = 0;
 
-    uint8_t tx_buf[256];
-    uint32_t len = 0;
+    char tx_buf[512] = {0};
+    int len = 0;
 
     if (current_mointor_mode == MONITOR_MODE_ASCII) {
 
-        char tx_buf[512]={0};
-        int len=0;
         // 시작 문자 $
-        snprintf(tx_buf, sizeof(tx_buf), "$");
+        len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "$%d", g_packet.count);
 
-        for(int i=0;i<g_packet.count;i++){
+        for (int i = 0; i < g_packet.count; i++) {
             uint8_t id = g_packet.nodes[i].id;
             uint8_t type = g_packet.nodes[i].type;
 
-            if(i>0){
-                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, ",");
-            }
+            len += snprintf(tx_buf + len, sizeof(tx_buf) - len, ",");
 
+            // id, type
             len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%d:%d:", id, type);
 
-            //value
-            if(type==TYPE_UINT8||type==TYPE_BOOL){
-                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%u", g_packet.nodes[i].value.u8_val[0]);
-            }else if(type==TYPE_INT32){
-                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%ld", g_packet.nodes[i].value.i_val);
-            }else if(type==TYPE_FLOAT){       
-                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%.2f", g_packet.nodes[i].value.f_val);
-            }else{
-                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%lu", g_packet.nodes[i].value.f_val);
-            }else{
+            // value
+            if (type == TYPE_UINT8 || type == TYPE_BOOL) {
+                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%u",
+                                g_packet.nodes[i].value.u8_val[0]);
+            } else if (type == TYPE_INT32) {
+                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%ld",
+                                g_packet.nodes[i].value.i_val);
+            } else if (type == TYPE_FLOAT) {
+                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%.2f",
+                                g_packet.nodes[i].value.f_val);
+            } else {
+                len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "%lu",
+                                g_packet.nodes[i].value.u_val);
             }
         }
 
+        // else{
+
+        // }
+
         // 종료#
         len += snprintf(tx_buf + len, sizeof(tx_buf) - len, "#\r\n");
-        
-    }else{
 
+        uartWrite(0, tx_buf, len);
+
+        osMutexRelease(monitor_mtx);
     }
-
-
-
-    uartWrite(0, tx_buf, len);
-
-    osMutexRelease(monitor_mtx);
-    }
+} /////
